@@ -9,7 +9,7 @@ This is a blob storage uploader service built as a Cloudflare Worker using Hono.
 **Key Features:**
 - Simple authentication (HTTP Basic Auth or API key)
 - Direct file uploads through worker to R2 storage
-- Configurable namespaces (default: "uploads", also supports "changelog", "docs", etc.)
+- Configurable namespace validation via environment variables
 - UUID-based filenames for security
 - Local development with R2 bucket simulation
 - File retrieval endpoint
@@ -83,7 +83,7 @@ Upload files directly through the worker to R2 storage.
 **Content-Type**: `multipart/form-data`
 **Form Fields**:
 - `file`: The file to upload
-- `namespace`: Optional namespace (defaults to "uploads")
+- `namespace`: Required namespace (must be in ALLOWED_NAMESPACES list)
 
 **Response**:
 ```json
@@ -108,7 +108,15 @@ Retrieve files from R2 storage.
 For local development:
 1. Run `npm run dev` - uses local R2 bucket simulation
 2. Configure authentication credentials in `wrangler.jsonc`
-3. No additional setup required - R2 binding handles local storage
+3. Configure allowed namespaces in `ALLOWED_NAMESPACES` environment variable
+4. No additional setup required - R2 binding handles local storage
+
+## Environment Variables
+
+- `API_KEY`: Optional API key for authentication
+- `BASIC_AUTH_USERNAME`: Username for HTTP Basic Auth
+- `BASIC_AUTH_PASSWORD`: Password for HTTP Basic Auth
+- `ALLOWED_NAMESPACES`: Comma-separated list of allowed namespaces (e.g., "uploads,docs,changelog,assets")
 
 ## Deployment
 

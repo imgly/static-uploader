@@ -6,13 +6,30 @@ interface CloudflareBindings {
   API_KEY?: string
   BASIC_AUTH_USERNAME?: string
   BASIC_AUTH_PASSWORD?: string
+  ALLOWED_NAMESPACES?: string
 }
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
 app.use(renderer)
 
+// Helper function to get allowed namespaces
+const getAllowedNamespaces = (env: CloudflareBindings): string[] => {
+  if (!env.ALLOWED_NAMESPACES) {
+    return ['uploads'] // Default fallback
+  }
+  return env.ALLOWED_NAMESPACES.split(',').map(ns => ns.trim())
+}
+
+// Helper function to validate namespace
+const isValidNamespace = (namespace: string, env: CloudflareBindings): boolean => {
+  const allowedNamespaces = getAllowedNamespaces(env)
+  return allowedNamespaces.includes(namespace)
+}
+
 app.get('/', (c) => {
+  const allowedNamespaces = getAllowedNamespaces(c.env)
+  
   return c.render(
     <html>
       <head>
@@ -42,8 +59,16 @@ app.get('/', (c) => {
           <br /><br />
           
           <label for="namespace">Namespace:</label>
-          <input type="text" id="namespace" name="namespace" placeholder="uploads" />
+          <select id="namespace" name="namespace" required>
+            {allowedNamespaces.map(ns => (
+              <option key={ns} value={ns} selected={ns === 'uploads'}>
+                {ns}
+              </option>
+            ))}
+          </select>
           <br /><br />
+          
+          <p><strong>Allowed namespaces:</strong> {allowedNamespaces.join(', ')}</p>
           
           <button type="submit">Upload File</button>
         </form>
@@ -117,6 +142,22 @@ app.post('/upload', authMiddleware, async (c) => {
           <body>
             <h1>Upload Error</h1>
             <p>No file provided</p>
+            <a href="/">Go back</a>
+          </body>
+        </html>
+      )
+    }
+    
+    // Validate namespace
+    if (!isValidNamespace(namespace, c.env)) {
+      const allowedNamespaces = getAllowedNamespaces(c.env)
+      return c.render(
+        <html>
+          <head><title>Upload Error</title></head>
+          <body>
+            <h1>Upload Error</h1>
+            <p>Invalid namespace: {namespace}</p>
+            <p>Allowed namespaces: {allowedNamespaces.join(', ')}</p>
             <a href="/">Go back</a>
           </body>
         </html>
