@@ -2,5 +2,16 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blob-storage-uploader",
   "compatibility_date": "2024-04-01",
-  "main": "./src/index.tsx"
+  "main": "./src/index.tsx",
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "blob-storage-bucket"
+    }
+  ],
+  "vars": {
+    "API_KEY": "your-api-key-here",
+    "BASIC_AUTH_USERNAME": "admin",
+    "BASIC_AUTH_PASSWORD": "password"
+  }
 }

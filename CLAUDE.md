@@ -4,20 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a blob storage uploader service built as a Cloudflare Worker using Hono.js. The service allows authenticated users to upload files to an S3 bucket with organized folder structure based on date and namespace.
+This is a blob storage uploader service built as a Cloudflare Worker using Hono.js. The service allows authenticated users to upload files to R2 storage with organized folder structure based on date and namespace.
 
 **Key Features:**
 - Simple authentication (HTTP Basic Auth or API key)
-- File uploads to S3 bucket with date-based folder structure
+- Direct file uploads through worker to R2 storage
 - Configurable namespaces (default: "uploads", also supports "changelog", "docs", etc.)
-- Local development with S3 bucket imitation
-- Cloudflare Workers deployment
+- UUID-based filenames for security
+- Local development with R2 bucket simulation
+- File retrieval endpoint
 
 ## Architecture
 
 - **Framework**: Hono.js (generic backend framework that works with Cloudflare Workers)
 - **Runtime**: Cloudflare Workers
-- **Storage**: S3 bucket integration
+- **Storage**: Native R2 binding (no external SDK required)
 - **File Structure**: `/{namespace}/{YYYY-MM-DD}/{uuid}`
 - **Authentication**: HTTP Basic Auth or API key validation
 
@@ -73,12 +74,41 @@ public/
 - Vite for build process and development server
 - When adding Cloudflare bindings, run `npm run cf-typegen` to update types
 
+## API Endpoints
+
+### POST /upload
+Upload files directly through the worker to R2 storage.
+
+**Authentication**: Required (API key or Basic Auth)
+**Content-Type**: `multipart/form-data`
+**Form Fields**:
+- `file`: The file to upload
+- `namespace`: Optional namespace (defaults to "uploads")
+
+**Response**:
+```json
+{
+  "success": true,
+  "key": "uploads/2024-07-16/uuid-here",
+  "fileId": "uuid-here",
+  "originalName": "example.jpg",
+  "size": 12345,
+  "type": "image/jpeg"
+}
+```
+
+### GET /file/:namespace/:date/:fileId
+Retrieve files from R2 storage.
+
+**Authentication**: None required
+**Response**: Direct file stream with appropriate Content-Type header
+
 ## Environment Setup
 
-For local development, you'll need to:
-1. Set up S3 bucket imitation for local testing
-2. Configure authentication credentials
-3. Set up environment variables for S3 connection
+For local development:
+1. Run `npm run dev` - uses local R2 bucket simulation
+2. Configure authentication credentials in `wrangler.jsonc`
+3. No additional setup required - R2 binding handles local storage
 
 ## Deployment
 
