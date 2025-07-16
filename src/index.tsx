@@ -13,7 +13,43 @@ const app = new Hono<{ Bindings: CloudflareBindings }>()
 app.use(renderer)
 
 app.get('/', (c) => {
-  return c.render(<h1>Blob Storage Uploader</h1>)
+  return c.render(
+    <html>
+      <head>
+        <title>Blob Storage Uploader</title>
+      </head>
+      <body>
+        <h1>Blob Storage Uploader</h1>
+        
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <h3>Authentication</h3>
+          <label for="apiKey">API Key (optional):</label>
+          <input type="password" id="apiKey" name="apiKey" placeholder="your-api-key-here" />
+          <br /><br />
+          
+          <label for="username">Username (optional):</label>
+          <input type="text" id="username" name="username" placeholder="admin" />
+          <br /><br />
+          
+          <label for="password">Password (optional):</label>
+          <input type="password" id="password" name="password" placeholder="password" />
+          <br /><br />
+          
+          <hr />
+          
+          <label for="file">Select File:</label>
+          <input type="file" id="file" name="file" required />
+          <br /><br />
+          
+          <label for="namespace">Namespace:</label>
+          <input type="text" id="namespace" name="namespace" placeholder="uploads" />
+          <br /><br />
+          
+          <button type="submit">Upload File</button>
+        </form>
+      </body>
+    </html>
+  )
 })
 
 // Authentication middleware
@@ -40,6 +76,30 @@ const authMiddleware = async (c: any, next: any) => {
     }
   }
   
+  // For form submissions, check form data
+  if (c.req.method === 'POST') {
+    try {
+      const formData = await c.req.formData()
+      const formApiKey = formData.get('apiKey') as string
+      const formUsername = formData.get('username') as string
+      const formPassword = formData.get('password') as string
+      
+      // Check form API key
+      if (formApiKey && c.env.API_KEY && formApiKey === c.env.API_KEY) {
+        return next()
+      }
+      
+      // Check form username/password
+      if (formUsername && formPassword && 
+          formUsername === c.env.BASIC_AUTH_USERNAME && 
+          formPassword === c.env.BASIC_AUTH_PASSWORD) {
+        return next()
+      }
+    } catch (e) {
+      // If form parsing fails, continue to unauthorized
+    }
+  }
+  
   return c.json({ error: 'Unauthorized' }, 401)
 }
 
@@ -51,7 +111,16 @@ app.post('/upload', authMiddleware, async (c) => {
     const namespace = formData.get('namespace') as string || 'uploads'
     
     if (!file) {
-      return c.json({ error: 'No file provided' }, 400)
+      return c.render(
+        <html>
+          <head><title>Upload Error</title></head>
+          <body>
+            <h1>Upload Error</h1>
+            <p>No file provided</p>
+            <a href="/">Go back</a>
+          </body>
+        </html>
+      )
     }
     
     // Generate UUID for filename
@@ -68,17 +137,34 @@ app.post('/upload', authMiddleware, async (c) => {
       },
     })
     
-    return c.json({
-      success: true,
-      key,
-      fileId,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-    })
+    return c.render(
+      <html>
+        <head><title>Upload Success</title></head>
+        <body>
+          <h1>Upload Successful!</h1>
+          <p><strong>File ID:</strong> {fileId}</p>
+          <p><strong>Key:</strong> {key}</p>
+          <p><strong>Original Name:</strong> {file.name}</p>
+          <p><strong>Size:</strong> {file.size} bytes</p>
+          <p><strong>Type:</strong> {file.type}</p>
+          <p><strong>File URL:</strong> <a href={`/file/${key}`} target="_blank">/file/{key}</a></p>
+          <br />
+          <a href="/">Upload another file</a>
+        </body>
+      </html>
+    )
   } catch (error) {
     console.error('Error uploading file:', error)
-    return c.json({ error: 'Failed to upload file' }, 500)
+    return c.render(
+      <html>
+        <head><title>Upload Error</title></head>
+        <body>
+          <h1>Upload Error</h1>
+          <p>Failed to upload file: {error.message}</p>
+          <a href="/">Go back</a>
+        </body>
+      </html>
+    )
   }
 })
 
