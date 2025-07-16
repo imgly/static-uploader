@@ -117,6 +117,7 @@ For local development:
 - `BASIC_AUTH_USERNAME`: Username for HTTP Basic Auth
 - `BASIC_AUTH_PASSWORD`: Password for HTTP Basic Auth
 - `ALLOWED_NAMESPACES`: Comma-separated list of allowed namespaces (e.g., "uploads,docs,changelog,assets")
+- `BASE_URL`: Base URL for file links displayed after upload (e.g., "https://your-domain.com")
 
 ## Deployment
 

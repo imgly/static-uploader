@@ -7,6 +7,7 @@ interface CloudflareBindings {
   BASIC_AUTH_USERNAME?: string
   BASIC_AUTH_PASSWORD?: string
   ALLOWED_NAMESPACES?: string
+  BASE_URL?: string
 }
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
@@ -25,6 +26,16 @@ const getAllowedNamespaces = (env: CloudflareBindings): string[] => {
 const isValidNamespace = (namespace: string, env: CloudflareBindings): boolean => {
   const allowedNamespaces = getAllowedNamespaces(env)
   return allowedNamespaces.includes(namespace)
+}
+
+// Helper function to get base URL for file links
+const getBaseUrl = (env: CloudflareBindings, request: Request): string => {
+  if (env.BASE_URL) {
+    return env.BASE_URL.replace(/\/$/, '') // Remove trailing slash
+  }
+  // Fallback to request origin
+  const url = new URL(request.url)
+  return `${url.protocol}//${url.host}`
 }
 
 app.get('/', (c) => {
@@ -178,6 +189,9 @@ app.post('/upload', authMiddleware, async (c) => {
       },
     })
     
+    const baseUrl = getBaseUrl(c.env, c.req.raw)
+    const fullFileUrl = `${baseUrl}/file/${key}`
+    
     return c.render(
       <html>
         <head><title>Upload Success</title></head>
@@ -188,7 +202,7 @@ app.post('/upload', authMiddleware, async (c) => {
           <p><strong>Original Name:</strong> {file.name}</p>
           <p><strong>Size:</strong> {file.size} bytes</p>
           <p><strong>Type:</strong> {file.type}</p>
-          <p><strong>File URL:</strong> <a href={`/file/${key}`} target="_blank">/file/{key}</a></p>
+          <p><strong>File URL:</strong> <a href={fullFileUrl} target="_blank">{fullFileUrl}</a></p>
           <br />
           <a href="/">Upload another file</a>
         </body>

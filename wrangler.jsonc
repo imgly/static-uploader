@@ -13,6 +13,7 @@
     "API_KEY": "your-api-key-here",
     "BASIC_AUTH_USERNAME": "admin",
     "BASIC_AUTH_PASSWORD": "password",
-    "ALLOWED_NAMESPACES": "uploads,docs,changelog,assets"
+    "ALLOWED_NAMESPACES": "uploads,docs,changelog,assets",
+    "BASE_URL": "https://your-domain.com"
   }
 }
