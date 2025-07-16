@@ -5,8 +5,8 @@
   "main": "./src/index.tsx",
   "r2_buckets": [
     {
-      "binding": "BUCKET",
-      "bucket_name": "blob-storage-bucket"
+      "bucket_name": "static-uploads",
+      "binding": "BUCKET"
     }
   ],
   "vars": {
