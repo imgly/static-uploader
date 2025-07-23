@@ -71,8 +71,8 @@ app.get('/', (c) => {
           
           <label for="namespace">Namespace:</label>
           <select id="namespace" name="namespace" required>
-            {allowedNamespaces.map(ns => (
-              <option key={ns} value={ns} selected={ns === 'uploads'}>
+            {allowedNamespaces.map((ns, index) => (
+              <option key={ns} value={ns} selected={index === 0}>
                 {ns}
               </option>
             ))}

@@ -13,7 +13,7 @@
     "API_KEY": "your-api-key-here",
     "BASIC_AUTH_USERNAME": "admin",
     "BASIC_AUTH_PASSWORD": "password",
-    "ALLOWED_NAMESPACES": "uploads,docs,changelog,assets",
+    "ALLOWED_NAMESPACES": "changelog,uploads,docs,assets",
     "BASE_URL": "https://uploads.staticimgly.com"
   }
 }
