@@ -175,12 +175,14 @@ app.post('/upload', authMiddleware, async (c) => {
       )
     }
     
-    // Generate UUID for filename
+    // Generate UUID for filename with original extension
     const fileId = crypto.randomUUID()
+    const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : ''
+    const filename = fileId + extension
     
     // Create date-based folder structure
     const date = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-    const key = `${namespace}/${date}/${fileId}`
+    const key = `${namespace}/${date}/${filename}`
     
     // Upload to R2 using native binding
     await c.env.BUCKET.put(key, file.stream(), {
