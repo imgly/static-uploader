@@ -190,7 +190,7 @@ app.post('/upload', authMiddleware, async (c) => {
     })
     
     const baseUrl = getBaseUrl(c.env, c.req.raw)
-    const fullFileUrl = `${baseUrl}/file/${key}`
+    const fullFileUrl = `${baseUrl}/${key}`
     
     return c.render(
       <html>
@@ -223,27 +223,5 @@ app.post('/upload', authMiddleware, async (c) => {
   }
 })
 
-// Get file from R2
-app.get('/file/:namespace/:date/:fileId', async (c) => {
-  try {
-    const { namespace, date, fileId } = c.req.param()
-    const key = `${namespace}/${date}/${fileId}`
-    
-    const object = await c.env.BUCKET.get(key)
-    
-    if (!object) {
-      return c.json({ error: 'File not found' }, 404)
-    }
-    
-    return new Response(object.body, {
-      headers: {
-        'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
-      },
-    })
-  } catch (error) {
-    console.error('Error retrieving file:', error)
-    return c.json({ error: 'Failed to retrieve file' }, 500)
-  }
-})
 
 export default app
