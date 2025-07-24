@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a blob storage uploader service built as a Cloudflare Worker using Hono.js. The service allows authenticated users to upload files to R2 storage with organized folder structure based on date and namespace.
 
 **Key Features:**
-- Simple authentication (HTTP Basic Auth or API key)
+- Simple authentication (API key only)
 - Direct file uploads through worker to R2 storage
 - Configurable namespace validation via environment variables
 - UUID-based filenames for security
@@ -20,7 +20,7 @@ This is a blob storage uploader service built as a Cloudflare Worker using Hono.
 - **Runtime**: Cloudflare Workers
 - **Storage**: Native R2 binding (no external SDK required)
 - **File Structure**: `/{namespace}/{YYYY-MM-DD}/{uuid}`
-- **Authentication**: HTTP Basic Auth or API key validation
+- **Authentication**: API key validation
 
 ## Development Commands
 
@@ -79,7 +79,7 @@ public/
 ### POST /upload
 Upload files directly through the worker to R2 storage.
 
-**Authentication**: Required (API key or Basic Auth)
+**Authentication**: Required (API key)
 **Content-Type**: `multipart/form-data`
 **Form Fields**:
 - `file`: The file to upload
@@ -113,9 +113,7 @@ For local development:
 
 ## Environment Variables
 
-- `API_KEY`: Optional API key for authentication
-- `BASIC_AUTH_USERNAME`: Username for HTTP Basic Auth
-- `BASIC_AUTH_PASSWORD`: Password for HTTP Basic Auth
+- `API_KEY`: Required API key for authentication
 - `ALLOWED_NAMESPACES`: Comma-separated list of allowed namespaces (e.g., "uploads,docs,changelog,assets")
 - `BASE_URL`: Base URL for file links displayed after upload (e.g., "https://your-domain.com")
 
